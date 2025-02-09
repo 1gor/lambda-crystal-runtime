@@ -15,7 +15,7 @@ end
 
 puts "Start building binaries..."
 
-exec("shards build --static --release --no-debug")
+exec("shards build --static --release --no-debug -o bootstrap")
 
 shard_yml = File.open("shard.yml") do |file|
   YAML.parse(file)
@@ -24,10 +24,6 @@ end
 shard_yml["targets"].as_h.each do |bin, main_path|
   bin_path = main_path["main"].as_s.split("/")[0...-1].join("/") + "/" + bin.as_s
 
-  exec "mkdir build-tmp && mkdir -p lambda"
-  exec "cp #{bin_path} build-tmp/."
-  exec "cp #{BUILDER_PATH}/bootstrap build-tmp/."
-  exec "cd build-tmp && zip #{bin}.zip bootstrap #{bin} && cd --"
-  exec "cp -f build-tmp/#{bin}.zip lambda/."
-  exec "rm -rf build-tmp"
+  exec "mkdir -p lambda"
+  exec "zip -j lambda/#{bin}.zip bootstrap"
 end
