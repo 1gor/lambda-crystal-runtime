@@ -15,15 +15,21 @@ end
 
 puts "Start building binaries..."
 
-exec("shards build --static --release --no-debug -o bootstrap")
+# Create output directory
+exec("mkdir -p .out")
 
 shard_yml = File.open("shard.yml") do |file|
   YAML.parse(file)
 end
 
 shard_yml["targets"].as_h.each do |bin, main_path|
-  bin_path = main_path["main"].as_s.split("/")[0...-1].join("/") + "/" + bin.as_s
-
+  main_file = main_path["main"].as_s
+  output_file = ".out/#{bin}"
+  
+  # Build the binary
+  exec("crystal build #{main_file} -o #{output_file} --release --static --no-debug")
+  
+  # Package the binary
   exec "mkdir -p lambda"
-  exec "zip -j lambda/#{bin}.zip bootstrap"
+  exec "zip -j lambda/#{bin}.zip #{output_file}"
 end
