@@ -1,0 +1,45 @@
+FROM amazonlinux:2023
+
+# Install Crystal prerequisites
+RUN dnf -y update && \
+    dnf -y install \
+    gcc \
+    make \
+    tar \
+    gzip \
+    libevent-devel \
+    gc-devel \
+    libyaml-devel \
+    openssl-devel \
+    pcre-devel \
+    llvm-devel \
+    zlib-devel \
+    git \
+    libffi-devel \
+    lld && \
+    dnf clean all
+
+# Add build arguments for Crystal version with default
+ARG CRYSTAL_VERSION=1.15.1
+ARG CRYSTAL_REVISION=1
+
+# Download and install Crystal from source tarball
+RUN mkdir -p /tmp/crystal && \
+    curl -L https://github.com/crystal-lang/crystal/releases/download/${CRYSTAL_VERSION}/crystal-${CRYSTAL_VERSION}-${CRYSTAL_REVISION}-linux-x86_64-bundled.tar.gz | \
+    tar -xz -C /tmp/crystal && \
+    cp -r /tmp/crystal/crystal-${CRYSTAL_VERSION}-${CRYSTAL_REVISION}/bin/* /usr/bin/ && \
+    cp -r /tmp/crystal/crystal-${CRYSTAL_VERSION}-${CRYSTAL_REVISION}/lib/* /usr/lib/ && \
+    cp -r /tmp/crystal/crystal-${CRYSTAL_VERSION}-${CRYSTAL_REVISION}/share/* /usr/share/ && \
+   rm -rf /tmp/crystal
+
+# Verify crystal installation
+RUN crystal --version
+
+# Setup lld as default linker
+RUN alternatives --install /usr/bin/ld ld /usr/bin/ld.lld 100
+
+# Setup working environment
+WORKDIR /app
+
+# Default command for building Lambda binaries
+CMD ["/bin/bash"]
