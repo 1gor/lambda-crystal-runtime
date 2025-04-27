@@ -20,7 +20,7 @@ RUN dnf -y update && \
     dnf clean all
 
 # Add build arguments for Crystal version with default
-ARG CRYSTAL_VERSION=1.15.1
+ARG CRYSTAL_VERSION=1.16.1
 ARG CRYSTAL_REVISION=1
 
 # Download and install Crystal from source tarball
